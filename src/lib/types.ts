@@ -76,6 +76,10 @@ export interface ImageMeta {
   dateTime: string | null;
   /** True if the RAW carries embedded in-camera lens-correction data. */
   hasEmbeddedLens: boolean;
+  /** Where automatic lens correction came from for this image. */
+  lensCorrectionSource: "embedded" | "lensfun" | "none";
+  /** Name of the Lensfun profile matched (when source is "lensfun"). */
+  matchedLensName: string | null;
   /** Full LibRaw metadata, flattened to readable key → value strings. */
   all: Record<string, string>;
 }

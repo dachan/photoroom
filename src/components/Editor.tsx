@@ -16,6 +16,7 @@ import {
   type RawFileEntry,
 } from "@/lib/fs/directory";
 import { decodeMetaAndThumb, decodeRaw } from "@/lib/decode/libraw";
+import { matchLensfun } from "@/lib/lens/lensfun";
 import { buildInitialEdit } from "@/lib/edit/initialEdit";
 import { encodeJpeg, toJpegFileName } from "@/lib/export/jpeg";
 import {
@@ -140,6 +141,17 @@ export function Editor() {
         const bytes = await readFileBytes(entry.handle);
         const { image, thumbnail } = await decodeRaw(bytes);
         if (token !== decodeToken.current) return;
+
+        // Prefer embedded in-camera correction; fall back to Lensfun by lens name.
+        if (!image.lensCorrection) {
+          const lf = await matchLensfun(image.meta, image.width, image.height);
+          if (token !== decodeToken.current) return;
+          if (lf) {
+            image.lensCorrection = lf.factors;
+            image.meta.lensCorrectionSource = "lensfun";
+            image.meta.matchedLensName = lf.name;
+          }
+        }
 
         loadImage(image);
         loadedImageId.current = selectedId;

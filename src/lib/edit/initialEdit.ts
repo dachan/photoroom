@@ -13,7 +13,8 @@ export function buildInitialEdit(meta: ImageMeta, saved?: EditRecord): EditParam
     return { ...DEFAULT_EDIT, ...saved.params, lens: { ...DEFAULT_EDIT.lens, ...saved.params.lens } };
   }
 
-  if (meta.hasEmbeddedLens) {
+  // Embedded (Sony in-camera) or Lensfun match → enable automatic correction.
+  if (meta.lensCorrectionSource !== "none") {
     return {
       ...DEFAULT_EDIT,
       lens: { ...DEFAULT_EDIT.lens, enabled: true, useEmbedded: true },

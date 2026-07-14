@@ -14,9 +14,17 @@ export function AdjustPanel({ onExport }: AdjustPanelProps) {
   const resetEdit = useEditorStore((s) => s.resetEdit);
   const selectedId = useEditorStore((s) => s.selectedId);
   const status = useEditorStore((s) => s.status);
-  const hasEmbedded = useEditorStore((s) =>
-    s.selectedId ? !!s.catalog[s.selectedId]?.meta?.hasEmbeddedLens : false,
+  const correctionSource = useEditorStore((s) =>
+    s.selectedId ? s.catalog[s.selectedId]?.meta?.lensCorrectionSource ?? "none" : "none",
   );
+  const matchedLensName = useEditorStore((s) =>
+    s.selectedId ? s.catalog[s.selectedId]?.meta?.matchedLensName ?? null : null,
+  );
+  const hasAuto = correctionSource !== "none";
+  const autoLabel =
+    correctionSource === "embedded"
+      ? "Use in-camera profile (embedded)"
+      : `Use Lensfun profile${matchedLensName ? ` — ${matchedLensName}` : ""}`;
 
   const disabled = !selectedId;
   const busy = status.kind === "loading" || status.kind === "exporting";
@@ -66,22 +74,22 @@ export function AdjustPanel({ onExport }: AdjustPanelProps) {
               On
             </label>
           </div>
-          {hasEmbedded && (
-            <label className="flex items-center gap-1.5 text-[11px] text-emerald-500">
+          {hasAuto && (
+            <label className="flex items-start gap-1.5 text-[11px] text-emerald-500">
               <input
                 type="checkbox"
                 checked={edit.lens.useEmbedded}
                 onChange={(e) => patchLens({ useEmbedded: e.target.checked })}
                 disabled={!edit.lens.enabled}
-                className="accent-emerald-500"
+                className="mt-0.5 accent-emerald-500"
               />
-              Use in-camera profile (embedded)
+              <span>{autoLabel}</span>
             </label>
           )}
           {edit.lens.fromProfile && (
             <p className="text-[11px] text-emerald-500">Profile matched from lens metadata.</p>
           )}
-          {!(hasEmbedded && edit.lens.useEmbedded) && (
+          {!(hasAuto && edit.lens.useEmbedded) && (
             <div className={edit.lens.enabled ? "space-y-3" : "space-y-3 opacity-40 pointer-events-none"}>
               <Slider label="Distortion k1" min={-0.5} max={0.5} step={0.005} value={edit.lens.k1} onChange={(v) => patchLens({ k1: v, fromProfile: false })} />
               <Slider label="Distortion k2" min={-0.2} max={0.2} step={0.005} value={edit.lens.k2} onChange={(v) => patchLens({ k2: v, fromProfile: false })} />

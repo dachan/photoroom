@@ -50,6 +50,8 @@ function toImageMeta(m: Metadata | undefined, fallbackW: number, fallbackH: numb
     flip: m?.flip ?? 0,
     dateTime: m?.timestamp instanceof Date ? m.timestamp.toISOString() : null,
     hasEmbeddedLens: false,
+    lensCorrectionSource: "none",
+    matchedLensName: null,
     all: m ? flattenMeta(m as unknown as Record<string, unknown>) : {},
   };
 }
@@ -114,6 +116,7 @@ export async function decodeRaw(bytes: ArrayBuffer): Promise<RawDecodeResult> {
     const lensCorrection = parseSonyEmbeddedCorrection(bytes);
     const imageMeta = toImageMeta(meta, img.width, img.height);
     imageMeta.hasEmbeddedLens = lensCorrection !== null;
+    if (lensCorrection) imageMeta.lensCorrectionSource = "embedded";
 
     const image: DecodedImage = {
       width: img.width,
