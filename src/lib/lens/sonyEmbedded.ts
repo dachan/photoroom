@@ -114,7 +114,9 @@ function buildFactors(raw: RawParams): EmbeddedLensFactors | null {
   if (!Number.isInteger(nc) || nc < 2 || nc > MAX_KNOTS) return null;
   if (raw.vignetting[0] !== nc) return null;
   if (raw.ca[0] !== 2 * nc) return null;
-  if (raw.distortion.length < nc + 1 || raw.ca.length < 2 * nc + 1) return null;
+  if (raw.distortion.length < nc + 1 || raw.vignetting.length < nc + 1 || raw.ca.length < 2 * nc + 1) {
+    return null;
+  }
 
   const distFactor = new Float32Array(MAX_KNOTS);
   const caRFactor = new Float32Array(MAX_KNOTS);
